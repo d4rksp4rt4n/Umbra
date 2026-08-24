@@ -2,7 +2,7 @@
   "name": "umbra-game-patcher",
   "productName": "Umbra Game Patcher",
   "version": "1.0.0",
-  "description": "Detects your installed Steam games and helps you apply patches from a curated database.",
+  "description": "Content restoration patcher for adult visual novels and eroge on Steam.",
   "main": "./out/main/index.js",
   "author": "d4rksp4rt4n",
   "private": true,
@@ -45,5 +45,10 @@
     "typescript": "^5.7.2",
     "vite": "^5.4.11",
     "zustand": "^5.0.2"
+  },
+  "allowScripts": {
+    "electron": true,
+    "esbuild": true,
+    "registry-js": true
   }
 }

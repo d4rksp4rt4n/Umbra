@@ -30,8 +30,13 @@ export default function AboutModal(): React.JSX.Element | null {
         <p className="mt-1 text-sm text-text-dim">Version {APP_VERSION}</p>
 
         <p className="mt-4 text-sm text-text">
-          Detects your installed Steam games, cross-references them against a curated patch
-          database, and helps you download and apply the ones available for your library.
+          Content restoration for adult visual novels and eroge on Steam. Detects your
+          installed games, cross-references them against a curated patch database, and helps
+          you download and apply the ones available for your library.
+        </p>
+
+        <p className="mt-3 text-xs text-text-dim">
+          Patch data comes from the Nukige Reborn archive.
         </p>
 
         <div className="mt-5 flex flex-col gap-2">

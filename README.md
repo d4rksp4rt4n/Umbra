@@ -2,7 +2,19 @@
 
 Detects your installed Steam games, cross-references them against a curated patch database, and helps you download and apply the patches available for your library.
 
+Umbra focuses on **content restoration for adult visual novels and eroge on Steam** — official and community uncensor patches, R18 restoration mods, and the equivalent fixes for titles that shipped censored or cut on Steam.
+
+> **18+.** This tool exists to restore adult content in games you already own. Nothing here bypasses DRM, unlocks paid content, or pirates anything — patches restore content the developer cut, censored, or distributes separately.
+
 > **Safety note:** installing patches is **opt-in**. By default the app only downloads patch files and opens the relevant folders for you to apply them yourself. Nothing is ever written into a game folder or executed without a confirmation dialog naming the exact game, path, and files involved.
+
+## The patch database
+
+Umbra reads `database/patches_database.json` from this repo. That database is the same one behind **[Nukige Reborn](https://nukige.netlify.app/)**, a curated archive of Steam uncensor patches, natively uncensored Steam games, asset-flip tracking, and DRM-free adult games on GOG — maintained by the same author as this app.
+
+Patches are collected from official developer releases, community sources, and in-house work, and are tested before being added. The database is generated from a maintained source-of-truth pipeline rather than scraped, so entries carry real metadata (developer, per-file listings, notes) rather than guesses.
+
+Because patch files are hosted on Google Drive, download reliability depends on those links staying live — the app reports a clear error rather than failing silently when one breaks.
 
 ---
 
@@ -19,6 +31,19 @@ npm run dev
 ```
 
 `npm run dev` launches the app with hot-reload and DevTools open.
+
+### If `npm install` blocks install scripts
+
+npm 12+ blocks dependency install/postinstall scripts by default. This project needs three of them — `electron` (downloads the ~100MB Electron binary), `esbuild` (fetches its platform binary), and `registry-js` (compiles the native Windows registry reader). They're pre-approved in `package.json` under `allowScripts`, so a normal `npm install` should just work.
+
+If you still see `install scripts blocked because they are not covered by allowScripts`, run:
+
+```bash
+npm approve-scripts --allow-scripts-pending
+npm install
+```
+
+The symptom of a blocked `electron` script is `npm run dev` failing with `Error: Electron uninstall` — the binary was never downloaded.
 
 ## Scripts
 
