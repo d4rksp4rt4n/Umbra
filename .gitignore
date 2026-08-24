@@ -1,0 +1,26 @@
+# Dependencies — restored by `npm install` from package-lock.json
+node_modules/
+
+# Build output
+# out/  = electron-vite compiled main/preload/renderer
+# dist/ = electron-builder installers + win-unpacked/
+out/
+dist/
+*.tsbuildinfo
+
+# Local environment / secrets
+.env
+.env.local
+
+# Logs
+*.log
+
+# OS cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/

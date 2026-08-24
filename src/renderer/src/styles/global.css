@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    @apply bg-bg-darkest text-text font-sans;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-bg-darkest;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-bg-card rounded;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-bg-hover;
+  }
+}

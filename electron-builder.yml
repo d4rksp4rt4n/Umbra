@@ -1,0 +1,39 @@
+appId: com.d4rksp4rt4n.umbra
+productName: Umbra Game Patcher
+directories:
+  buildResources: build
+  output: dist
+
+files:
+  - out/**/*
+  - package.json
+
+# Native binaries can't be executed directly from inside app.asar — Windows/Node's spawn
+# needs a real file on disk, and an asar path isn't one (that's the ENOENT "spawn ...
+# app.asar\...\7za.exe ENOENT" bug). Anything that gets spawned as its own process, or
+# loads a native/WASM binary via a real filesystem path, has to be excluded from the
+# archive and left as loose files instead.
+asarUnpack:
+  - '**/node_modules/7zip-bin/**'
+  - '**/node_modules/node-unrar-js/**'
+
+win:
+  icon: icon.ico
+  requestedExecutionLevel: requireAdministrator
+  target:
+    - target: nsis
+      arch: [x64]
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+
+linux:
+  target:
+    - AppImage
+  category: Utility
+
+mac:
+  target:
+    - dmg
+  category: public.app-category.utilities

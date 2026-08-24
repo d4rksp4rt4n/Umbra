@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- CSP is applied via a response header set in main/index.ts instead of a fixed meta
+         tag here, since dev (Vite/React Fast Refresh, which needs 'unsafe-eval') and
+         production need different policies. Don't add a meta CSP back — a meta tag and a
+         header CSP both apply and the stricter one wins, which re-breaks dev silently. -->
+    <title>Umbra Game Patcher</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
