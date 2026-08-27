@@ -1,4 +1,5 @@
 # Umbra Game Patcher
+<img width="2288" height="448" alt="banner" src="https://github.com/user-attachments/assets/4ca73417-2149-453b-93aa-2d70d153d801" />
 
 Detects your installed Steam games, cross-references them against a curated patch database, and helps you download and apply the patches available for your library.
 
