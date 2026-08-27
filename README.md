@@ -155,7 +155,7 @@ To publish: tag a release (e.g. `v1.1.0`) and attach the installer from `dist/`.
 
 ## History
 
-Umbra is a ground-up Electron/TypeScript rewrite of an earlier Python/customtkinter app (`SteamGamePatcher.py`), which is now retired. The mapping between the two — which module replaced which function, what behaviour was preserved deliberately, and what was changed — is kept in [`docs/PORTING-NOTES.md`](docs/PORTING-NOTES.md) for anyone comparing against the old version.
+Umbra is a ground-up Electron/TypeScript rewrite of an earlier Python/customtkinter app [Steam Game Patcher](https://github.com/d4rksp4rt4n/SteamGamePatcher), which is now retired. The mapping between the two — which module replaced which function, what behaviour was preserved deliberately, and what was changed — is kept in [`docs/PORTING-NOTES.md`](docs/PORTING-NOTES.md) for anyone comparing against the old version.
 
 ---
 
