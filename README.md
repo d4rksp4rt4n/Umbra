@@ -11,7 +11,7 @@ Umbra focuses on **content restoration for adult visual novels and eroge on Stea
 
 ## The patch database
 
-Umbra reads `database/patches_database.json` from this repo. That database is the same one behind **[Nukige Reborn](https://nukige.netlify.app/)**, a curated archive of Steam uncensor patches, natively uncensored Steam games, asset-flip tracking, and DRM-free adult games on GOG — maintained by the same author as this app.
+Umbra reads `database/patches_database.json` from this repo. That database is the same one behind **[Nukige Reborn](https://nukige.netlify.app/)**, a curated archive of Steam uncensor patches, natively uncensored Steam games, asset-flip tracking, and DRM-free adult games on GOG — co-maintained by the same author as this app.
 
 Patches are collected from official developer releases, community sources, and in-house work, and are tested before being added. The database is generated from a maintained source-of-truth pipeline rather than scraped, so entries carry real metadata (developer, per-file listings, notes) rather than guesses.
 
