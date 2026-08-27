@@ -3,6 +3,7 @@ import { useLibraryStore } from '@renderer/store/libraryStore'
 import { useSettingsStore } from '@renderer/store/settingsStore'
 import { useUpdateStore } from '@renderer/store/updateStore'
 import { useUiStore } from '@renderer/store/uiStore'
+import bannerUrl from '@renderer/assets/banner.webp'
 
 export default function Header(): React.JSX.Element {
   const { dbVersion, dbUpdated, search, setSearch, viewMode, setViewMode, matches } =
@@ -17,10 +18,27 @@ export default function Header(): React.JSX.Element {
   }
 
   return (
-    <header className="flex flex-col gap-3 border-b border-bg-card bg-bg-dark px-5 py-3">
-      <div className="flex items-center justify-between">
+    <header className="border-b border-bg-card bg-bg-dark">
+      {/* Banner artwork carries the wordmark, so the app title is screen-reader only here.
+          The artwork is authored at ~5:1 to match this strip's aspect at typical window
+          widths, so object-cover crops only a few pixels off the sides and the logo and
+          character always stay fully visible. Controls sit below the art rather than on
+          top of it — a scrim dark enough to keep overlaid text legible would swallow the
+          letters. */}
+      <div className="relative h-[200px] shrink-0 overflow-hidden bg-[#06050b]">
+        <h1 className="sr-only">Umbra Game Patcher</h1>
+        <img
+          src={bannerUrl}
+          alt="Umbra"
+          className="h-full w-full object-cover"
+          style={{ objectPosition: 'center' }}
+        />
+        {/* Short fade so the art meets the controls instead of ending on a hard edge. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-bg-dark to-transparent" />
+      </div>
+
+      <div className="flex items-center justify-between gap-3 px-5 pt-0">
         <div className="flex items-baseline gap-3">
-          <h1 className="text-lg font-bold text-text-bright">Umbra Game Patcher</h1>
           <span className="text-xs text-text-dim">{APP_VERSION}</span>
           {settings.betaAutoInstall && (
             <span className="rounded-full bg-danger/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-danger">
@@ -40,8 +58,8 @@ export default function Header(): React.JSX.Element {
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs text-text-dim">
-            Database generated {dbVersion} · {dbUpdated ? 'Updated' : 'Up to date'} · {matches.length} game
-            {matches.length === 1 ? '' : 's'} with patches
+            Database generated {dbVersion} · {dbUpdated ? 'Updated' : 'Up to date'} ·{' '}
+            {matches.length} game{matches.length === 1 ? '' : 's'} with patches
           </span>
           <button
             type="button"
@@ -62,7 +80,7 @@ export default function Header(): React.JSX.Element {
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 px-5 py-3">
         <input
           type="text"
           value={search}

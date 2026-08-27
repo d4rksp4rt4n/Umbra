@@ -49,6 +49,14 @@ export default defineConfig({
         '@shared': resolve('src/shared')
       }
     },
+    build: {
+      // Inline bundled assets (currently just the header banner, ~90KB) as data: URIs
+      // instead of emitting separate files. In a packaged build the renderer document is
+      // loaded over file://, where a `img-src 'self'` CSP does not reliably cover
+      // sibling asset files — `data:` is already allowed, so inlining keeps images
+      // working in production without loosening the policy.
+      assetsInlineLimit: 256 * 1024
+    },
     plugins: [react()]
   }
 })
