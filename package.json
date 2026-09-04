@@ -1,7 +1,7 @@
 {
   "name": "umbra-game-patcher",
   "productName": "Umbra Game Patcher",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Content restoration patcher for adult visual novels and eroge on Steam.",
   "main": "./out/main/index.js",
   "author": "d4rksp4rt4n",
