@@ -1,4 +1,6 @@
-export const APP_VERSION = '1.0.0'
+/** Comes from package.json via a build-time define — see src/shared/globals.d.ts. Bump
+ *  the version in package.json only; there is deliberately no second copy here. */
+export const APP_VERSION = __APP_VERSION__
 
 export const DB_URL =
   'https://raw.githubusercontent.com/d4rksp4rt4n/Umbra/refs/heads/main/database/patches_database.json'

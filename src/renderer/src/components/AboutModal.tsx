@@ -1,8 +1,10 @@
 import { APP_VERSION, GITHUB_REPO_URL, NUKIGE_SITE_URL } from '@shared/constants'
+import { useLibraryStore } from '@renderer/store/libraryStore'
 import { useUiStore } from '@renderer/store/uiStore'
 
 export default function AboutModal(): React.JSX.Element | null {
   const { aboutOpen, closeAbout } = useUiStore()
+  const { dbVersion, dbUpdated, matches } = useLibraryStore()
 
   if (!aboutOpen) return null
 
@@ -38,6 +40,26 @@ export default function AboutModal(): React.JSX.Element | null {
         <p className="mt-3 text-xs text-text-dim">
           Patch data comes from the Nukige Reborn archive.
         </p>
+
+        {/* Database status lives here rather than in the header: the header now floats its
+            controls over the banner art, and this text could not share that single row at
+            the 950px minimum window width. */}
+        <dl className="mt-4 rounded-md border border-bg-card bg-bg-input p-3 text-left text-xs">
+          <div className="flex items-baseline justify-between gap-3">
+            <dt className="text-text-dim">Database generated</dt>
+            <dd className="text-text">{dbVersion}</dd>
+          </div>
+          <div className="mt-1.5 flex items-baseline justify-between gap-3">
+            <dt className="text-text-dim">Status</dt>
+            <dd className={dbUpdated ? 'text-success-dim' : 'text-text'}>
+              {dbUpdated ? 'Updated' : 'Up to date'}
+            </dd>
+          </div>
+          <div className="mt-1.5 flex items-baseline justify-between gap-3">
+            <dt className="text-text-dim">Games with patches</dt>
+            <dd className="text-text">{matches.length}</dd>
+          </div>
+        </dl>
 
         <div className="mt-5 flex flex-col gap-2">
           <button
