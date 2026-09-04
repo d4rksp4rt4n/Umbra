@@ -27,6 +27,10 @@ win:
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
+  # Explicit, space-free name. The default is "${productName} Setup ${version}.exe", whose
+  # spaces make it awkward both as a release-asset name and for the release workflow to
+  # locate. This keeps the path the workflow uploads fully predictable from the version.
+  artifactName: Umbra-Game-Patcher-Setup-${version}.${ext}
 
 linux:
   target:

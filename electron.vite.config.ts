@@ -1,9 +1,24 @@
+import { readFileSync } from 'fs'
 import { resolve } from 'path'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
 
+// package.json is the single source of truth for the app version. It is read here (rather
+// than imported, which would pull the whole manifest — dependency list included — into the
+// renderer bundle) and substituted into `__APP_VERSION__` at build time, which is what
+// src/shared/constants.ts exports as APP_VERSION. All three targets need the define: main
+// and preload for the update check, renderer for the About dialog.
+// Resolved against cwd, matching how the aliases below already resolve their paths —
+// electron-vite always runs from the project root. Avoids __dirname, which is not
+// available in an ESM config ("type": "module" in package.json).
+const appVersion: string = JSON.parse(
+  readFileSync(resolve('package.json'), 'utf8')
+).version
+const versionDefine = { __APP_VERSION__: JSON.stringify(appVersion) }
+
 export default defineConfig({
   main: {
+    define: versionDefine,
     plugins: [externalizeDepsPlugin()],
     resolve: {
       alias: {
@@ -23,6 +38,7 @@ export default defineConfig({
     }
   },
   preload: {
+    define: versionDefine,
     plugins: [externalizeDepsPlugin()],
     resolve: {
       alias: {
@@ -43,6 +59,7 @@ export default defineConfig({
     }
   },
   renderer: {
+    define: versionDefine,
     resolve: {
       alias: {
         '@renderer': resolve('src/renderer/src'),
