@@ -45,17 +45,20 @@ jobs:
           node-version: 22
           cache: npm
 
-      # electron-builder downloads the Electron binary and NSIS toolchain on first run;
-      # both are large and version-stable, so cache them across runs.
-      - name: Cache electron-builder downloads
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/AppData/Local/electron/Cache
-            ~/AppData/Local/electron-builder/Cache
-          key: electron-builder-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: electron-builder-${{ runner.os }}-
-
+      # Deliberately NOT caching electron-builder's downloads (the Electron zip and NSIS
+      # toolchain). It looks like an obvious win but measurement on the v1.1.0 run says
+      # otherwise: the runner pulls all four archives in ~0.7s total (115MB of Electron in
+      # 321ms), while restoring the 241MB cache costs several seconds and a chunk of the
+      # repo's cache quota. The real cost inside the package step is ~30s of NSIS
+      # compressing the installer, which no cache can touch.
+      #
+      # The npm cache above (actions/setup-node `cache: npm`) is worth keeping — it stores
+      # verified tarballs that `npm ci` re-checks against package-lock.json's integrity
+      # hashes. Note that caching `node_modules` itself is a different proposition and is
+      # avoided on purpose: it would freeze the resolution of the `registry-js`
+      # optionalDependency, which npm silently skips when it can't build, so a cache
+      # written during a bad run would keep shipping the folder-fallback Steam discovery
+      # with nothing in the log to say so.
       - name: Install dependencies
         run: npm ci
 
