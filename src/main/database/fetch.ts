@@ -11,7 +11,7 @@ import log from 'electron-log'
 import { DB_URL } from '@shared/constants'
 import { getDbPath, getDbEtagPath } from '@main/config/paths'
 
-export interface DatabaseFetchResult {
+interface DatabaseFetchResult {
   /** True if a fresh copy was downloaded; false if the cached copy on disk is still current
    *  (304 Not Modified) or the fetch failed and we're falling back to whatever is cached. */
   updated: boolean

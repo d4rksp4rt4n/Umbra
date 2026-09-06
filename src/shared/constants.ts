@@ -8,17 +8,16 @@ export const DB_URL =
 /** Repo the app itself is published from — used for both the update-check API call and
  *  the "View on GitHub" link in the About screen. Change this in one place if the repo
  *  ever moves. */
-export const GITHUB_REPO = 'd4rksp4rt4n/Umbra'
+const GITHUB_REPO = 'd4rksp4rt4n/Umbra'
 export const GITHUB_REPO_URL = `https://github.com/${GITHUB_REPO}`
 export const GITHUB_RELEASES_URL = `${GITHUB_REPO_URL}/releases`
 export const GITHUB_LATEST_RELEASE_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`
 
 export const NUKIGE_SITE_URL = 'https://nukige.netlify.app/'
 
-/** Where the owned-games list can be exported from. Umbra never fetches either of these
- *  itself — the user opens them in their own signed-in browser, saves the page, and
- *  imports the file. See main/steam/ownedGames.ts for why it works this way. */
-export const STEAMDB_CALCULATOR_URL = 'https://steamdb.info/calculator/'
+/** Where the owned-games list is exported from. Umbra never fetches this itself — the
+ *  user opens it in their own signed-in browser, saves the page, and imports the file.
+ *  See main/steam/ownedGames.ts for why it works this way. */
 export const STEAM_USERDATA_URL = 'https://store.steampowered.com/dynamicstore/userdata/'
 
 /** Filename written into each game's install directory. */

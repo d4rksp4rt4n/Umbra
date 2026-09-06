@@ -9,11 +9,10 @@ import type {
   InstalledGamesMap,
   LastAppliedMap,
   LastPatchRecord,
-  LibraryLoadResult,
-  OwnedSource
+  LibraryLoadResult
 } from '@shared/types'
 
-export type ViewMode = 'list' | 'grid'
+type ViewMode = 'list' | 'grid'
 
 interface LibraryStore {
   // --- server data ---
@@ -30,7 +29,6 @@ interface LibraryStore {
   /** Imported owned-games list metadata, surfaced in Settings. */
   ownedCount: number
   ownedSyncedAt: string | null
-  ownedSource: OwnedSource | null
   /** How many listed games are owned but not installed. */
   uninstalledCount: number
 
@@ -40,7 +38,9 @@ interface LibraryStore {
   selectedAppid: string | null
 
   // --- actions ---
-  setLibrary: (result: LibraryLoadResult) => void
+  /** Replaces all server-derived state. `keepSelection` preserves the highlighted game
+   *  when it survives the refresh — set by reload(), not by the initial load. */
+  setLibrary: (result: LibraryLoadResult, keepSelection?: boolean) => void
   setLoading: (loading: boolean) => void
   setViewMode: (mode: ViewMode) => void
   setSearch: (search: string) => void
@@ -70,31 +70,35 @@ export const useLibraryStore = create<LibraryStore>((set, get) => ({
   lastApplied: {},
   ownedCount: 0,
   ownedSyncedAt: null,
-  ownedSource: null,
   uninstalledCount: 0,
 
   viewMode: 'list',
   search: '',
   selectedAppid: null,
 
-  setLibrary: (result) =>
-    set({
-      loading: false,
-      error: result.error,
-      steamPath: result.steamPath,
-      installed: result.installed,
-      dbVersion: result.dbVersion,
-      dbUpdated: result.dbUpdated,
-      matches: result.matches,
-      groupedChanges: result.groupedChanges,
-      favorites: new Set(result.favorites),
-      lastApplied: result.lastApplied,
-      ownedCount: result.ownedCount,
-      ownedSyncedAt: result.ownedSyncedAt,
-      ownedSource: result.ownedSource,
-      uninstalledCount: result.uninstalledCount,
-      // Auto-select the first game once data lands.
-      selectedAppid: result.matches[0]?.appid ?? null
+  setLibrary: (result, keepSelection = false) =>
+    set((s) => {
+      const previous = keepSelection ? s.selectedAppid : null
+      return {
+        loading: false,
+        error: result.error,
+        steamPath: result.steamPath,
+        installed: result.installed,
+        dbVersion: result.dbVersion,
+        dbUpdated: result.dbUpdated,
+        matches: result.matches,
+        groupedChanges: result.groupedChanges,
+        favorites: new Set(result.favorites),
+        lastApplied: result.lastApplied,
+        ownedCount: result.ownedCount,
+        ownedSyncedAt: result.ownedSyncedAt,
+        uninstalledCount: result.uninstalledCount,
+        // Stay on the current game if it survived the refresh; otherwise take the top
+        // of the new list.
+        selectedAppid: result.matches.some((m) => m.appid === previous)
+          ? previous
+          : (result.matches[0]?.appid ?? null)
+      }
     }),
 
   setLoading: (loading) => set({ loading }),
@@ -119,31 +123,18 @@ export const useLibraryStore = create<LibraryStore>((set, get) => ({
     // Deliberately not flipping `loading` — that swaps the whole window for a full-screen
     // spinner, which is far too heavy for a settings toggle. The list just updates when
     // the result lands.
-    const previous = get().selectedAppid
-    const result = await window.patcher.loadLibrary()
-    set({
-      loading: false,
-      error: result.error,
-      steamPath: result.steamPath,
-      installed: result.installed,
-      dbVersion: result.dbVersion,
-      dbUpdated: result.dbUpdated,
-      matches: result.matches,
-      groupedChanges: result.groupedChanges,
-      favorites: new Set(result.favorites),
-      lastApplied: result.lastApplied,
-      ownedCount: result.ownedCount,
-      ownedSyncedAt: result.ownedSyncedAt,
-      ownedSource: result.ownedSource,
-      uninstalledCount: result.uninstalledCount,
-      // Keep the user where they were if that game survived the refresh; otherwise fall
-      // back to the top of the new list.
-      selectedAppid: result.matches.some((m) => m.appid === previous)
-        ? previous
-        : (result.matches[0]?.appid ?? null)
-    })
+    get().setLibrary(await window.patcher.loadLibrary(), true)
   }
 }))
+
+/** The matches the list and grid both render: everything whose name contains the search
+ *  text. Shared so the two views can never drift on filtering or on the empty state. */
+export function useFilteredMatches(): GameMatch[] {
+  const matches = useLibraryStore((s) => s.matches)
+  const search = useLibraryStore((s) => s.search)
+  const needle = search.trim().toLowerCase()
+  return needle ? matches.filter((m) => m.gameName.toLowerCase().includes(needle)) : matches
+}
 
 /** True if this match's recorded last-applied file isn't in the DB's current file list. */
 export function hasUpdate(match: GameMatch, lastApplied: LastAppliedMap): boolean {

@@ -22,7 +22,7 @@ function sizeIsAcceptable(actual: number, expected: number | null): boolean {
   return smallOk || tolOk
 }
 
-export interface ObtainFileParams {
+interface ObtainFileParams {
   fileId: string
   fileName: string
   rawSize: string

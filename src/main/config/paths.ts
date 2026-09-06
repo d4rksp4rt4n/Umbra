@@ -40,10 +40,6 @@ export function resolveCacheDir(override: string | null): string {
   return override && override.trim().length > 0 ? override : getCacheDir()
 }
 
-export function getLogPath(): string {
-  return join(getDataDir(), 'patcher.log')
-}
-
 /** patcher_config.json is written per-game, inside the game's own install directory,
  *  so it survives even if the app's userData is wiped. */
 export const CONFIG_FILENAME = 'patcher_config.json'

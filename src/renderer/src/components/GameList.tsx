@@ -1,4 +1,4 @@
-import { hasUpdate, useLibraryStore } from '@renderer/store/libraryStore'
+import { hasUpdate, useFilteredMatches, useLibraryStore } from '@renderer/store/libraryStore'
 import { countPatchFiles } from '@shared/fileKind'
 import BoxArt from './BoxArt'
 import FavoriteStar from './FavoriteStar'
@@ -13,12 +13,8 @@ import NotInstalledBadge from './NotInstalledBadge'
  * browsable and their patches are downloadable, but nothing can be applied to them.
  */
 export default function GameList(): React.JSX.Element {
-  const { matches, search, favorites, lastApplied, selectedAppid, selectGame, toggleFavorite } =
-    useLibraryStore()
-
-  const filtered = matches.filter((m) =>
-    m.gameName.toLowerCase().includes(search.trim().toLowerCase())
-  )
+  const { favorites, lastApplied, selectedAppid, selectGame, toggleFavorite } = useLibraryStore()
+  const filtered = useFilteredMatches()
 
   if (filtered.length === 0) {
     return <p className="p-6 text-sm text-text-dim">No games match your search.</p>
