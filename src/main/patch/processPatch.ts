@@ -25,7 +25,7 @@ import { savePerGameConfig } from '@main/config/perGameConfig'
 import type { InstalledGamesMap } from '@shared/types'
 import type { ProgressCallback } from '@main/download/googleDrive'
 
-export interface ProcessPatchParams {
+interface ProcessPatchParams {
   files: PatchFile[]
   selectedIndices: number[]
   installed: InstalledGamesMap
@@ -48,7 +48,7 @@ export interface ProcessPatchParams {
   onProgress: ProgressCallback
 }
 
-export interface ProcessPatchResult {
+interface ProcessPatchResult {
   mode: 'manual' | 'beta'
   /** Null when the game isn't installed — download-only, nothing to apply into. */
   installDir: string | null

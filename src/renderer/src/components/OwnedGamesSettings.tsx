@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useSettingsStore } from '@renderer/store/settingsStore'
 import { useLibraryStore } from '@renderer/store/libraryStore'
-import { STEAMDB_CALCULATOR_URL, STEAM_USERDATA_URL } from '@shared/constants'
+import { STEAM_USERDATA_URL } from '@shared/constants'
 import ToggleSwitch from './ToggleSwitch'
 
 /** ISO timestamp -> "5 Sep 2026, 18:05" in the viewer's own locale and timezone. */
@@ -16,11 +16,6 @@ function formatSyncedAt(iso: string | null): string {
     hour: '2-digit',
     minute: '2-digit'
   })
-}
-
-const SOURCE_LABEL: Record<string, string> = {
-  steamdb: 'SteamDB calculator page',
-  'steam-userdata': 'Steam store userdata'
 }
 
 /**
@@ -43,7 +38,6 @@ export default function OwnedGamesSettings(): React.JSX.Element {
   } = useSettingsStore()
   const ownedCount = useLibraryStore((s) => s.ownedCount)
   const ownedSyncedAt = useLibraryStore((s) => s.ownedSyncedAt)
-  const ownedSource = useLibraryStore((s) => s.ownedSource)
   const uninstalledCount = useLibraryStore((s) => s.uninstalledCount)
   const [showHelp, setShowHelp] = useState(false)
 
@@ -77,10 +71,7 @@ export default function OwnedGamesSettings(): React.JSX.Element {
           <p className="text-xs font-semibold uppercase tracking-wide text-text-dim">
             Owned games list
           </p>
-          <p className="text-[11px] text-text-dim">
-            Last synced: {formatSyncedAt(ownedSyncedAt)}
-            {ownedSource && SOURCE_LABEL[ownedSource] ? ` · ${SOURCE_LABEL[ownedSource]}` : ''}
-          </p>
+          <p className="text-[11px] text-text-dim">Last synced: {formatSyncedAt(ownedSyncedAt)}</p>
         </div>
 
         <p className="mt-1 text-xs text-text-dim">
@@ -144,48 +135,24 @@ export default function OwnedGamesSettings(): React.JSX.Element {
               already signed in to. Only the list of app IDs is stored — no key, no password,
               no session.
             </p>
-            <div>
-              <p className="font-semibold text-text">From Steam (recommended)</p>
-              <ol className="ml-4 mt-1 list-decimal space-y-0.5">
-                <li>
-                  Signed in to Steam in your browser, open{' '}
-                  <button
-                    type="button"
-                    onClick={() => void window.patcher.openExternal(STEAM_USERDATA_URL)}
-                    className="break-all text-link underline hover:text-accent"
-                  >
-                    {STEAM_USERDATA_URL}
-                  </button>
-                </li>
-                <li>Save the page with Ctrl+S — it&apos;s a small .json file.</li>
-                <li>Hit &ldquo;Sync owned games…&rdquo; above and pick it.</li>
-              </ol>
-              <p className="mt-1 text-[11px]">
-                If it looks empty, you were signed out — sign in, reload, and save again.
-              </p>
-            </div>
-            <div>
-              <p className="font-semibold text-text">From SteamDB (fallback)</p>
-              <ol className="ml-4 mt-1 list-decimal space-y-0.5">
-                <li>
-                  Open{' '}
-                  <button
-                    type="button"
-                    onClick={() => void window.patcher.openExternal(STEAMDB_CALCULATOR_URL)}
-                    className="text-link underline hover:text-accent"
-                  >
-                    the SteamDB calculator
-                  </button>{' '}
-                  and look up your own profile.
-                </li>
-                <li>Wait for the games table to load, then save the page with Ctrl+S.</li>
-                <li>Hit &ldquo;Sync owned games…&rdquo; above and pick the saved .htm file.</li>
-              </ol>
-              <p className="mt-1 text-[11px]">
-                Slower — a much larger page, and it needs your profile looked up first. Worth
-                keeping for the day the Steam route changes shape.
-              </p>
-            </div>
+            <ol className="ml-4 list-decimal space-y-1">
+              <li>
+                Signed in to Steam in your browser, open{' '}
+                <button
+                  type="button"
+                  onClick={() => void window.patcher.openExternal(STEAM_USERDATA_URL)}
+                  className="break-all text-link underline hover:text-accent"
+                >
+                  {STEAM_USERDATA_URL}
+                </button>
+              </li>
+              <li>Save the page with Ctrl+S — it&apos;s a small .json file.</li>
+              <li>Hit &ldquo;Sync owned games…&rdquo; above and pick it.</li>
+            </ol>
+            <p>
+              If the import comes back empty, you were signed out when you saved — sign in,
+              reload, and save again.
+            </p>
             <p>
               The list is a snapshot, so re-sync whenever you buy something you want Umbra to
               notice.

@@ -46,9 +46,6 @@ export interface PatchDatabaseRaw {
   metadata?: { version?: string; recent_changes?: unknown[] }
 }
 
-/** Where an imported owned-games list came from. */
-export type OwnedSource = 'steamdb' | 'steam-userdata'
-
 /** The user's owned Steam library, imported rather than fetched — see
  *  main/steam/ownedGames.ts for why there's no way to read this off disk or fetch it
  *  without a credential. */
@@ -56,7 +53,6 @@ export interface OwnedLibrary {
   appids: string[]
   /** ISO timestamp of the last successful import, or null if never imported. */
   syncedAt: string | null
-  source: OwnedSource | null
 }
 
 /** Import summary shown in Settings after the user picks an export file. */
@@ -64,8 +60,6 @@ export interface OwnedImportResult {
   ok: boolean
   /** Total appids found in the file (the user's whole library, not just patchable ones). */
   parsed: number
-  syncedAt: string | null
-  source: OwnedSource | null
   error: string | null
 }
 
@@ -121,10 +115,9 @@ export interface LibraryLoadResult {
   favorites: string[]
   lastApplied: LastAppliedMap
   /** Metadata about the imported owned-games list (never the appid list itself — the
-   *  renderer only needs the counts and the timestamp). */
+   *  renderer only needs the count and the timestamp). */
   ownedCount: number
   ownedSyncedAt: string | null
-  ownedSource: OwnedSource | null
   /** How many DB entries the user owns but has not installed — the rows this feature
    *  adds. Zero when the feature is off or no list has been imported. */
   uninstalledCount: number
@@ -183,9 +176,6 @@ export interface AppSettings {
    *  install directory to apply anything into. Off by default. */
   showUninstalled: boolean
 }
-
-/** appid -> local file name -> whether that patch file exists in the cache folder. */
-export type CachedFilesResult = string[]
 
 export type InstructionKind = 'text' | 'html' | 'unsupported'
 

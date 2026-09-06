@@ -20,12 +20,7 @@ import {
   saveOwnedLibrary
 } from '@main/steam/ownedGames'
 import { getSettings } from '@main/config/settings'
-import type {
-  GameMatch,
-  LastAppliedMap,
-  LibraryLoadResult,
-  OwnedImportResult
-} from '@shared/types'
+import type { GameMatch, LastAppliedMap, LibraryLoadResult, OwnedImportResult } from '@shared/types'
 
 function emptyResult(error: string): LibraryLoadResult {
   return {
@@ -39,7 +34,6 @@ function emptyResult(error: string): LibraryLoadResult {
     lastApplied: {},
     ownedCount: 0,
     ownedSyncedAt: null,
-    ownedSource: null,
     uninstalledCount: 0,
     error
   }
@@ -86,7 +80,7 @@ async function loadLibrary(): Promise<LibraryLoadResult> {
   // the next refresh without a restart. It's only *applied* when the toggle is on.
   const ownedLibrary = await loadOwnedLibrary()
   const { showUninstalled } = getSettings()
-  const { matches } = buildMatches(installed, entries, {
+  const matches = buildMatches(installed, entries, {
     owned: new Set(ownedLibrary.appids),
     includeUninstalled: showUninstalled
   })
@@ -111,7 +105,6 @@ async function loadLibrary(): Promise<LibraryLoadResult> {
     lastApplied,
     ownedCount: ownedLibrary.appids.length,
     ownedSyncedAt: ownedLibrary.syncedAt,
-    ownedSource: ownedLibrary.source,
     uninstalledCount: orderedMatches.filter((m) => !m.installed).length,
     error: null
   }
@@ -146,31 +139,29 @@ export function registerLibraryIpcHandlers(): void {
   // list with what it contains. Deliberately a whole-file replace rather than a merge:
   // a re-import is how the user drops games they no longer own.
   ipcMain.handle('owned:import', async (): Promise<OwnedImportResult> => {
-    const empty = { parsed: 0, syncedAt: null, source: null }
     try {
       const picked = await dialog.showOpenDialog({
-        title: 'Choose a saved Steam library export',
+        title: 'Choose your saved Steam userdata JSON',
         properties: ['openFile'],
         filters: [
-          { name: 'Steam library export', extensions: ['htm', 'html', 'json', 'txt'] },
+          { name: 'Steam userdata JSON', extensions: ['json'] },
           { name: 'All files', extensions: ['*'] }
         ]
       })
       if (picked.canceled || !picked.filePaths[0]) {
-        return { ok: false, ...empty, error: null }
+        return { ok: false, parsed: 0, error: null }
       }
 
-      const { appids, source } = await importOwnedFromFile(picked.filePaths[0])
-      const syncedAt = new Date().toISOString()
-      await saveOwnedLibrary({ appids, syncedAt, source })
-      log.info(`[ipc/owned:import] Imported ${appids.length} owned appids from ${source}`)
-      return { ok: true, parsed: appids.length, syncedAt, source, error: null }
+      const appids = await importOwnedFromFile(picked.filePaths[0])
+      await saveOwnedLibrary({ appids, syncedAt: new Date().toISOString() })
+      log.info(`[ipc/owned:import] Imported ${appids.length} owned appids`)
+      return { ok: true, parsed: appids.length, error: null }
     } catch (err) {
       // Deliberately does not log the file path: an export lives wherever the user put
       // it, and that path can carry their account name.
       const message = err instanceof Error ? err.message : String(err)
       log.warn(`[ipc/owned:import] Import failed: ${message}`)
-      return { ok: false, ...empty, error: message }
+      return { ok: false, parsed: 0, error: message }
     }
   })
 

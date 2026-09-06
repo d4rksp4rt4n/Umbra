@@ -2,7 +2,6 @@
  * Single entry point for archive handling — callers (cache.ts, processPatch.ts) don't
  * need to know that RAR requires a completely different library than everything else.
  */
-import { extname } from 'node:path'
 import * as sevenZip from './sevenZip'
 import * as rar from './rar'
 

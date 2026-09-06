@@ -26,7 +26,7 @@ import { createWriteStream, existsSync, statSync } from 'node:fs'
 import { rename, unlink } from 'node:fs/promises'
 import log from 'electron-log'
 
-export interface DownloadProgress {
+interface DownloadProgress {
   /** 0-100, or -1 when the total size is unknown (indeterminate progress). */
   percent: number
   bytesDownloaded: number

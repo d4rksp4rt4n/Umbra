@@ -44,7 +44,6 @@ export default function App(): React.JSX.Element {
           lastApplied: {},
           ownedCount: 0,
           ownedSyncedAt: null,
-          ownedSource: null,
           uninstalledCount: 0,
           error: String(err)
         })

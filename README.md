@@ -136,26 +136,23 @@ the list instead of fetching it** — you export it from a page you're already s
 to, and pick the file. Nothing is stored but the app IDs: no API key, no password, no
 session cookie, nothing to revoke.
 
-Two formats are accepted, either one being a single Ctrl+S:
+One format, one file, a single Ctrl+S:
 
-| Source | What to save |
-|---|---|
-| **`store.steampowered.com/dynamicstore/userdata/`** while signed in (recommended) | the JSON — parsed from `rgOwnedApps` |
-| [SteamDB calculator](https://steamdb.info/calculator/) for your own profile (fallback) | the page (`.htm`) — parsed from its `<tr class="app" data-appid>` rows |
+1. Signed in to Steam in your browser, open `store.steampowered.com/dynamicstore/userdata/`
+2. Save it — a small `.json` file (~370 KB)
+3. Settings → **Sync owned games…** → pick it
 
-Steam's own endpoint is the primary route: it is a small JSON file and needs no profile
-lookup, where the SteamDB page is ~1 MB and has to be searched for first. SteamDB is kept
-as a fallback so a breaking change to either source leaves the other working.
+Umbra never requests that URL itself; it only opens it in your browser. The appid list is
+read from `rgOwnedApps` and written to `owned_games.json`.
 
-Umbra itself never requests either URL; it only opens them in your browser.
-
-Browsers that pretty-print JSON (Firefox's viewer and similar) save the *viewer's* HTML
-rather than the raw response, so the parser also digs an HTML-escaped `rgOwnedApps` out
-of a wrapped save before it falls through to the SteamDB path — otherwise a correct
-Steam export would be reported as a malformed SteamDB page.
-
-Settings shows the imported count, the last-synced timestamp, and a **Re-sync** button.
-The list is a snapshot — re-sync after buying something you want Umbra to notice.
+A saved [SteamDB calculator](https://steamdb.info/calculator/) page was accepted here too,
+and was removed. Measured on a real 4,692-game library it found **zero** patchable games
+the Steam endpoint misses (476 vs 443, a strict superset) from a file 3.4× larger — the
+extras the Steam route finds are free, delisted and DLC entries a *value* calculator
+omits by design. It could also half-succeed: SteamDB's table is lazy-rendered behind an
+`&all_games` view, so a page saved from the default view (capped to "most played games to
+limit page size") yields ~20 rows that parse cleanly and import silently as a near-empty
+library. One format that cannot half-succeed beats two.
 
 There is deliberately **no auto-sync-on-launch option**, which would need a stored
 credential to authenticate with, and storing one is exactly what this design avoids.
@@ -170,7 +167,7 @@ credential to authenticate with, and storing one is exactly what this design avo
 | Linux | `~/.config/umbra-game-patcher/data/` |
 | macOS | `~/Library/Application Support/umbra-game-patcher/data/` |
 
-Contains `patches_database.json`, its `.etag`, `favorites.json`, `owned_games.json` (the imported owned-games list, when the feature is used), `patcher.log`, and `cache/` (downloaded patches — relocatable in Settings).
+Contains `patches_database.json`, its `.etag`, `favorites.json`, `owned_games.json` (the imported owned-games list, when the feature is used), and `cache/` (downloaded patches — relocatable in Settings). The log is written by electron-log to `logs/main.log` one level up, not into `data/`.
 
 **Per-game state stays in the game's own install folder** as `patcher_config.json`, recording the last applied patch and what it changed, so it survives an app reinstall.
 

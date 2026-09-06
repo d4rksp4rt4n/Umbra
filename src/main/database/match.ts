@@ -12,12 +12,7 @@
 import log from 'electron-log'
 import type { GameMatch, InstalledGamesMap, PatchDbEntry } from '@shared/types'
 
-export interface MatchResult {
-  matches: GameMatch[]
-  byId: Record<string, GameMatch>
-}
-
-export interface BuildMatchesOptions {
+interface BuildMatchesOptions {
   /** Appids from the imported owned-games list. Empty when nothing has been imported. */
   owned?: Set<string>
   /** When true, DB entries in `owned` but not in `installed` become matches too. */
@@ -28,7 +23,7 @@ export function buildMatches(
   installed: InstalledGamesMap,
   entries: PatchDbEntry[],
   options: BuildMatchesOptions = {}
-): MatchResult {
+): GameMatch[] {
   const { owned = new Set<string>(), includeUninstalled = false } = options
   const installedAppIds = new Set(Object.keys(installed))
   log.info(`[database/match] Database contains ${entries.length} entries`)
@@ -38,7 +33,6 @@ export function buildMatches(
   }
 
   const matches: GameMatch[] = []
-  const byId: Record<string, GameMatch> = {}
 
   for (const entry of entries) {
     const appidRaw = entry.appid
@@ -58,7 +52,6 @@ export function buildMatches(
       installed: isInstalled
     }
     matches.push(match)
-    byId[appid] = match
   }
 
   matches.sort((a, b) => a.gameName.toLowerCase().localeCompare(b.gameName.toLowerCase()))
@@ -68,7 +61,7 @@ export function buildMatches(
     `[database/match] Total matches found: ${matches.length}` +
       (includeUninstalled ? ` (${uninstalled} owned but not installed)` : '')
   )
-  return { matches, byId }
+  return matches
 }
 
 /**
