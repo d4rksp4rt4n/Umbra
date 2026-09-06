@@ -73,7 +73,7 @@ The installer is unsigned, so Windows SmartScreen will warn on first run. That's
 ```
 src/
 ├── main/                 # Electron main process — all filesystem/network/process work
-│   ├── steam/            # Steam install discovery, VDF/ACF parsing, box art lookup
+│   ├── steam/            # Steam install discovery, VDF/ACF parsing, box art, owned-games import
 │   ├── database/         # Remote DB fetch (ETag), format normalisation, game matching
 │   ├── download/         # Google Drive downloader (resume + progress)
 │   ├── archive/          # 7-Zip and RAR extraction / integrity testing
@@ -99,7 +99,7 @@ src/
 1. **Steam discovery** — Windows registry (via the optional `registry-js`) with a fallback to the usual install paths; `~/.steam`, `~/.local/share/Steam` etc. on Linux; `~/Library/Application Support/Steam` on macOS.
 2. **Library scan** — parses `libraryfolders.vdf` and every `appmanifest_*.acf` across *all* Steam libraries, not just the default one.
 3. **Database** — conditional GET (ETag) against the patch database on GitHub, so unchanged data isn't re-downloaded. Falls back to the cached copy when offline.
-4. **Matching** — cross-references DB entries against installed appids. Sort priority is `favourite + update > update > favourite > rest`, then alphabetical.
+4. **Matching** — cross-references DB entries against installed appids, plus owned-but-uninstalled ones when that toggle is on. Sort priority is `favourite + update > update > favourite > rest`, then alphabetical — with installed games occupying every tier above the uninstalled ones.
 5. **Update detection** — each game's `patcher_config.json` records the last applied patch filename. If that filename is no longer in the DB's current file list for that game, an **Update** badge appears.
 
    ⚠️ This is filename-based. If a patch is re-uploaded under the *same* filename with different contents, it won't be detected as an update.
@@ -115,6 +115,51 @@ Either way, **nothing is written into a game folder or executed without a confir
 
 An optional sub-toggle ("attempt to auto-install patches after downloading") chains the install step onto a download automatically — it still stops at the confirmation dialog.
 
+### Owned games you haven't installed
+
+Off by default (Settings → gear icon).
+
+By default the library only covers games installed on this PC. With this on, it also
+lists games you **own on Steam** that have patches, so you can see what's available
+before reinstalling. Those rows are dimmed, badged **Not installed**, and sort below
+every installed game.
+
+They are **download-only**. Patch files can be fetched into the cache, but "Install
+patch" is hidden — including for `.exe` patches — because there is no game folder to
+write into. `processPatch()` enforces the same rule server-side rather than trusting the
+UI. The detail pane swaps "Launch game" for "Install on Steam" (`steam://install/<appid>`).
+
+#### Where the owned-games list comes from
+
+Steam will not tell an application what you own without a credential, so **Umbra imports
+the list instead of fetching it** — you export it from a page you're already signed in
+to, and pick the file. Nothing is stored but the app IDs: no API key, no password, no
+session cookie, nothing to revoke.
+
+Two formats are accepted, either one being a single Ctrl+S:
+
+| Source | What to save |
+|---|---|
+| **`store.steampowered.com/dynamicstore/userdata/`** while signed in (recommended) | the JSON — parsed from `rgOwnedApps` |
+| [SteamDB calculator](https://steamdb.info/calculator/) for your own profile (fallback) | the page (`.htm`) — parsed from its `<tr class="app" data-appid>` rows |
+
+Steam's own endpoint is the primary route: it is a small JSON file and needs no profile
+lookup, where the SteamDB page is ~1 MB and has to be searched for first. SteamDB is kept
+as a fallback so a breaking change to either source leaves the other working.
+
+Umbra itself never requests either URL; it only opens them in your browser.
+
+Browsers that pretty-print JSON (Firefox's viewer and similar) save the *viewer's* HTML
+rather than the raw response, so the parser also digs an HTML-escaped `rgOwnedApps` out
+of a wrapped save before it falls through to the SteamDB path — otherwise a correct
+Steam export would be reported as a malformed SteamDB page.
+
+Settings shows the imported count, the last-synced timestamp, and a **Re-sync** button.
+The list is a snapshot — re-sync after buying something you want Umbra to notice.
+
+There is deliberately **no auto-sync-on-launch option**, which would need a stored
+credential to authenticate with, and storing one is exactly what this design avoids.
+
 ---
 
 ## Data locations
@@ -125,7 +170,7 @@ An optional sub-toggle ("attempt to auto-install patches after downloading") cha
 | Linux | `~/.config/umbra-game-patcher/data/` |
 | macOS | `~/Library/Application Support/umbra-game-patcher/data/` |
 
-Contains `patches_database.json`, its `.etag`, `favorites.json`, `patcher.log`, and `cache/` (downloaded patches — relocatable in Settings).
+Contains `patches_database.json`, its `.etag`, `favorites.json`, `owned_games.json` (the imported owned-games list, when the feature is used), `patcher.log`, and `cache/` (downloaded patches — relocatable in Settings).
 
 **Per-game state stays in the game's own install folder** as `patcher_config.json`, recording the last applied patch and what it changed, so it survives an app reinstall.
 
@@ -141,6 +186,7 @@ These each cost real debugging time; they're documented in comments at the relev
 - **CSP is set via a response header, not a `<meta>` tag** — dev needs `unsafe-eval` for Vite's React Fast Refresh, production doesn't. A `<meta>` CSP can't vary by environment, and if both exist the stricter one wins, silently breaking dev with a blank window.
 - **The preload is built as CJS, not ESM** — sandboxed preload scripts have had flaky ESM support; CJS avoids a class of "contextBridge silently never ran" failures.
 - **Google Drive's confirmation flow moves** — large files return an HTML interstitial containing a `<form id="download-form">` whose hidden inputs must be replayed as query params. This has changed shape before (a bare `confirm=` token previously) and will again; `src/main/download/googleDrive.ts` keeps fallbacks for the older variants.
+- **There is no way to read *owned* Steam games locally, and the keyless remote routes are gone.** Every local candidate answers the wrong question: `localconfig.vdf`'s `apps` block only lists games that were *launched* (essentially every entry carries `LastPlayed`), `licensecache` is encrypted, and `appcache/librarycache/` covers anything the client drew a capsule for — store browsing included. Remotely, `steamcommunity.com/<id>/games?xml=1` now **302s to `/login` for anonymous callers even on fully public profiles** (verified against several, with and without a browser User-Agent) — while `/<id>/?xml=1` still works keylessly, so the redirect is specific to the games list, not to XML. `IPlayerService/GetOwnedGames` returns 401 without a key. That is why the owned-games list is imported from a user-exported file rather than fetched; see the header comment in `src/main/steam/ownedGames.ts`.
 - **Attach an `'error'` listener to write streams** — `fs` write streams report open failures via an `'error'` event, not a thrown exception. With no listener, Node escalates it to an uncaught exception that bypasses every `try/catch` and crashes the main process outright.
 
 ---

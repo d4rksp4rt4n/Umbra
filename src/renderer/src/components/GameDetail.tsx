@@ -2,6 +2,7 @@ import { hasUpdate, useLibraryStore } from '@renderer/store/libraryStore'
 import BoxArt from './BoxArt'
 import FavoriteStar from './FavoriteStar'
 import UpdateBadge from './UpdateBadge'
+import NotInstalledBadge from './NotInstalledBadge'
 import PatchActionPanel from './PatchActionPanel'
 
 export default function GameDetail(): React.JSX.Element {
@@ -41,6 +42,7 @@ export default function GameDetail(): React.JSX.Element {
           <p className="mt-0.5 text-xs text-text-dim">App ID {match.appid}</p>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
+            {!match.installed && <NotInstalledBadge />}
             {isUpd && <UpdateBadge />}
             {lastPatch && (
               <span className="rounded-full bg-bg-input px-2 py-0.5 text-[11px] text-text-dim">
@@ -50,13 +52,28 @@ export default function GameDetail(): React.JSX.Element {
           </div>
 
           <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => void window.patcher.openExternal(`steam://run/${match.appid}`)}
-              className="rounded-md bg-accent-dim px-3 py-1.5 text-xs font-semibold text-text-bright hover:bg-accent"
-            >
-              ▶ Launch game
-            </button>
+            {match.installed ? (
+              <button
+                type="button"
+                onClick={() => void window.patcher.openExternal(`steam://run/${match.appid}`)}
+                className="rounded-md bg-accent-dim px-3 py-1.5 text-xs font-semibold text-text-bright hover:bg-accent"
+              >
+                ▶ Launch game
+              </button>
+            ) : (
+              // steam://install pops Steam's own install dialog. Launching an
+              // uninstalled game would just make Steam ask to install it anyway, via a
+              // more confusing route.
+              <button
+                type="button"
+                onClick={() =>
+                  void window.patcher.openExternal(`steam://install/${match.appid}`)
+                }
+                className="rounded-md bg-accent-dim px-3 py-1.5 text-xs font-semibold text-text-bright hover:bg-accent"
+              >
+                ⤓ Install on Steam
+              </button>
+            )}
             {installDir && (
               <button
                 type="button"

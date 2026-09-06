@@ -3,10 +3,14 @@ import { countPatchFiles } from '@shared/fileKind'
 import BoxArt from './BoxArt'
 import FavoriteStar from './FavoriteStar'
 import UpdateBadge from './UpdateBadge'
+import NotInstalledBadge from './NotInstalledBadge'
 
 /**
  * Compact row-based list view: box art thumbnail, favorite star, dev name, file count,
  * and an update badge when a newer patch is available.
+ *
+ * Rows for games the user owns but hasn't installed are dimmed and badged — they're
+ * browsable and their patches are downloadable, but nothing can be applied to them.
  */
 export default function GameList(): React.JSX.Element {
   const { matches, search, favorites, lastApplied, selectedAppid, selectGame, toggleFavorite } =
@@ -33,7 +37,7 @@ export default function GameList(): React.JSX.Element {
               onClick={() => selectGame(m.appid)}
               className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors ${
                 selected ? 'bg-bg-card' : 'hover:bg-bg-card/50'
-              }`}
+              } ${m.installed ? '' : 'opacity-60 hover:opacity-100'}`}
             >
               <BoxArt
                 appid={m.appid}
@@ -52,6 +56,7 @@ export default function GameList(): React.JSX.Element {
               <span className="shrink-0 text-xs text-text-dim">
                 {countPatchFiles(m.data.files)} file(s)
               </span>
+              {!m.installed && <NotInstalledBadge />}
               {isUpd && <UpdateBadge />}
               <FavoriteStar active={isFav} onToggle={() => void toggleFavorite(m.appid)} />
             </button>

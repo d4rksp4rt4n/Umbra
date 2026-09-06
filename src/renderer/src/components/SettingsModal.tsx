@@ -1,34 +1,8 @@
 import { useState } from 'react'
 import { useSettingsStore } from '@renderer/store/settingsStore'
 import { PATCH_SOURCE_LABEL } from '@shared/constants'
-
-function ToggleSwitch({
-  checked,
-  onChange,
-  activeColor = 'bg-danger'
-}: {
-  checked: boolean
-  onChange: () => void
-  activeColor?: string
-}): React.JSX.Element {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      onClick={onChange}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
-        checked ? activeColor : 'bg-bg-card'
-      }`}
-    >
-      <span
-        className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
-          checked ? 'translate-x-5' : 'translate-x-0'
-        }`}
-      />
-    </button>
-  )
-}
+import ToggleSwitch from './ToggleSwitch'
+import OwnedGamesSettings from './OwnedGamesSettings'
 
 export default function SettingsModal(): React.JSX.Element | null {
   const {
@@ -63,7 +37,7 @@ export default function SettingsModal(): React.JSX.Element | null {
       onClick={closeSettings}
     >
       <div
-        className="w-[520px] rounded-lg border border-bg-card bg-bg-dark p-5 shadow-xl"
+        className="max-h-[90vh] w-[520px] overflow-y-auto rounded-lg border border-bg-card bg-bg-dark p-5 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
@@ -123,6 +97,8 @@ export default function SettingsModal(): React.JSX.Element | null {
             </div>
           )}
         </div>
+
+        <OwnedGamesSettings />
 
         <div className="mt-4 rounded-md border border-bg-card bg-bg-input p-4">
           <p className="mb-2 font-semibold text-text-bright">Downloaded patch cache</p>

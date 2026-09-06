@@ -46,12 +46,38 @@ export interface PatchDatabaseRaw {
   metadata?: { version?: string; recent_changes?: unknown[] }
 }
 
-/** A DB entry cross-referenced against an installed game. */
+/** Where an imported owned-games list came from. */
+export type OwnedSource = 'steamdb' | 'steam-userdata'
+
+/** The user's owned Steam library, imported rather than fetched — see
+ *  main/steam/ownedGames.ts for why there's no way to read this off disk or fetch it
+ *  without a credential. */
+export interface OwnedLibrary {
+  appids: string[]
+  /** ISO timestamp of the last successful import, or null if never imported. */
+  syncedAt: string | null
+  source: OwnedSource | null
+}
+
+/** Import summary shown in Settings after the user picks an export file. */
+export interface OwnedImportResult {
+  ok: boolean
+  /** Total appids found in the file (the user's whole library, not just patchable ones). */
+  parsed: number
+  syncedAt: string | null
+  source: OwnedSource | null
+  error: string | null
+}
+
+/** A DB entry cross-referenced against the user's library. */
 export interface GameMatch {
   appid: string
   gameName: string
   devName: string
   data: PatchDbEntry
+  /** False for entries surfaced by the owned-games feature: the user owns the game on
+   *  Steam but it isn't on disk, so patches can be downloaded but never applied. */
+  installed: boolean
 }
 
 /** Result of loading + normalizing the database, ready for matching. */
@@ -94,6 +120,14 @@ export interface LibraryLoadResult {
   /** appids the user has starred. Sent as an array since Set has no JSON/IPC form. */
   favorites: string[]
   lastApplied: LastAppliedMap
+  /** Metadata about the imported owned-games list (never the appid list itself — the
+   *  renderer only needs the counts and the timestamp). */
+  ownedCount: number
+  ownedSyncedAt: string | null
+  ownedSource: OwnedSource | null
+  /** How many DB entries the user owns but has not installed — the rows this feature
+   *  adds. Zero when the feature is off or no list has been imported. */
+  uninstalledCount: number
   error: string | null
 }
 
@@ -144,6 +178,10 @@ export interface AppSettings {
   autoInstallAfterDownload: boolean
   /** Remembers the last list/grid toggle across app restarts. */
   viewMode: 'list' | 'grid'
+  /** When true, the library also lists games the user owns on Steam (per the imported
+   *  owned-games list) but hasn't installed. Those rows are download-only — there's no
+   *  install directory to apply anything into. Off by default. */
+  showUninstalled: boolean
 }
 
 /** appid -> local file name -> whether that patch file exists in the cache folder. */

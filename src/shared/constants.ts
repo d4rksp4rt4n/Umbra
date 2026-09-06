@@ -15,6 +15,12 @@ export const GITHUB_LATEST_RELEASE_API_URL = `https://api.github.com/repos/${GIT
 
 export const NUKIGE_SITE_URL = 'https://nukige.netlify.app/'
 
+/** Where the owned-games list can be exported from. Umbra never fetches either of these
+ *  itself — the user opens them in their own signed-in browser, saves the page, and
+ *  imports the file. See main/steam/ownedGames.ts for why it works this way. */
+export const STEAMDB_CALCULATOR_URL = 'https://steamdb.info/calculator/'
+export const STEAM_USERDATA_URL = 'https://store.steampowered.com/dynamicstore/userdata/'
+
 /** Filename written into each game's install directory. */
 export const CONFIG_FILENAME = 'patcher_config.json'
 
