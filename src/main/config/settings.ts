@@ -1,7 +1,11 @@
 /**
  * Persisted app settings, backing the "Enable Beta Auto-Install (experimental)" toggle
  * (defaulted OFF for safety), the auto-install-after-download sub-toggle, an optional
- * cache directory override, and the remembered list/grid view mode.
+ * cache directory override, the remembered list/grid view mode, and the
+ * show-owned-but-uninstalled toggle.
+ *
+ * Bulk data does not belong here — the imported owned-games list is thousands of appids
+ * and lives in its own file (main/steam/ownedGames.ts).
  */
 import Store from 'electron-store'
 import type { AppSettings } from '@shared/types'
@@ -10,7 +14,8 @@ const defaults: AppSettings = {
   betaAutoInstall: false,
   cacheDirOverride: null,
   autoInstallAfterDownload: false,
-  viewMode: 'list'
+  viewMode: 'list',
+  showUninstalled: false
 }
 
 let store: Store<AppSettings> | null = null
@@ -28,7 +33,8 @@ export function getSettings(): AppSettings {
     betaAutoInstall: s.get('betaAutoInstall'),
     cacheDirOverride: s.get('cacheDirOverride'),
     autoInstallAfterDownload: s.get('autoInstallAfterDownload'),
-    viewMode: s.get('viewMode')
+    viewMode: s.get('viewMode'),
+    showUninstalled: s.get('showUninstalled')
   }
 }
 

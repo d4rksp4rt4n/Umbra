@@ -3,6 +3,7 @@ import type {
   AppSettings,
   InstructionContent,
   LibraryLoadResult,
+  OwnedImportResult,
   PatchApplyRequest,
   PatchApplyResponse,
   PatchProgressEvent,
@@ -13,6 +14,11 @@ const api = {
   loadLibrary: (): Promise<LibraryLoadResult> => ipcRenderer.invoke('library:load'),
   toggleFavorite: (appid: string): Promise<string[]> =>
     ipcRenderer.invoke('favorites:toggle', appid),
+
+  /** Opens a native file picker for a saved Steam library export and replaces the
+   *  stored owned-games list with it. See main/steam/ownedGames.ts. */
+  importOwnedGames: (): Promise<OwnedImportResult> => ipcRenderer.invoke('owned:import'),
+  clearOwnedGames: (): Promise<void> => ipcRenderer.invoke('owned:clear'),
 
   getSettings: (): Promise<AppSettings> => ipcRenderer.invoke('settings:get'),
   setSettings: (patch: Partial<AppSettings>): Promise<AppSettings> =>

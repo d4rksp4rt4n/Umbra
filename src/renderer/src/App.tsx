@@ -42,6 +42,10 @@ export default function App(): React.JSX.Element {
           groupedChanges: {},
           favorites: [],
           lastApplied: {},
+          ownedCount: 0,
+          ownedSyncedAt: null,
+          ownedSource: null,
+          uninstalledCount: 0,
           error: String(err)
         })
       )

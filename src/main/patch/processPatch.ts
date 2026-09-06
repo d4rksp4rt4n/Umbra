@@ -50,7 +50,8 @@ export interface ProcessPatchParams {
 
 export interface ProcessPatchResult {
   mode: 'manual' | 'beta'
-  installDir: string
+  /** Null when the game isn't installed — download-only, nothing to apply into. */
+  installDir: string | null
   /** Populated in manual mode: local cache paths of every downloaded file, so the
    *  renderer can open them / reveal them in the file manager. */
   cachedPaths: string[]
@@ -82,9 +83,19 @@ export async function processPatch(params: ProcessPatchParams): Promise<ProcessP
   // warning dialog for this specific action.
   const effectiveBeta = (betaAutoInstall || forceApply) && !forceDownloadOnly
 
-  const game = installed[appid]
-  if (!game) throw new Error(`Game not installed: ${appid}`)
-  if (effectiveBeta) assertValidInstallDir(game.installDir)
+  // A game surfaced by the owned-but-not-installed feature has no entry here. That's a
+  // hard stop for anything that writes or executes, but downloading its patch files into
+  // the cache is still perfectly valid — the user can install the game later and apply
+  // them then. So the missing-install-dir check is scoped to the apply path only.
+  const game = installed[appid] ?? null
+  if (effectiveBeta) {
+    if (!game) {
+      throw new Error(
+        `${gameName} isn't installed, so there's no game folder to apply a patch into. Install it on Steam first.`
+      )
+    }
+    assertValidInstallDir(game.installDir)
+  }
 
   const cachedPaths: string[] = []
   let appliedFile: string | null = null
@@ -130,7 +141,9 @@ export async function processPatch(params: ProcessPatchParams): Promise<ProcessP
       }
 
       onStatus(`Applying: ${file.path}`)
-      changes = await smartApplyPatch(tempDir, game.installDir, onStatus)
+      // Non-null: effectiveBeta is the only route here, and it already threw above if
+      // the game isn't installed.
+      changes = await smartApplyPatch(tempDir, game!.installDir, onStatus)
       appliedFile = file.name
     } finally {
       await rm(tempDir, { recursive: true, force: true })
@@ -152,7 +165,7 @@ export async function processPatch(params: ProcessPatchParams): Promise<ProcessP
   onStatus('SUCCESS')
   return {
     mode: effectiveBeta ? 'beta' : 'manual',
-    installDir: game.installDir,
+    installDir: game?.installDir ?? null,
     cachedPaths,
     appliedFile,
     changes

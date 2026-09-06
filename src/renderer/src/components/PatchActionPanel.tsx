@@ -94,7 +94,15 @@ export default function PatchActionPanel({ match }: PatchActionPanelProps): Reac
     if (alreadyCached && res.ok && res.cachedPaths[0]) {
       await window.patcher.openPath(res.cachedPaths[0])
     }
-    if (!alreadyCached && res.ok && settings.betaAutoInstall && settings.autoInstallAfterDownload) {
+    // match.installed gates the auto-chain as well as the button: without it, an
+    // uninstalled game would still pop the confirm dialog after a download.
+    if (
+      !alreadyCached &&
+      res.ok &&
+      match.installed &&
+      settings.betaAutoInstall &&
+      settings.autoInstallAfterDownload
+    ) {
       // Chains into the apply step automatically, but still stops at the confirmation
       // dialog rather than skipping it — the auto-install setting removes the need for a
       // separate "Install patch" click, not the explicit confirm-before-writing step.
@@ -153,6 +161,13 @@ export default function PatchActionPanel({ match }: PatchActionPanelProps): Reac
       <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-text-dim">
         Patch files ({patchFiles.length})
       </h3>
+      {!match.installed && patchFiles.length > 0 && (
+        <p className="mb-2 rounded-md border border-bg-card bg-bg-input px-3 py-2 text-xs text-text-dim">
+          You own this on Steam but it isn&apos;t installed here, so patches can only be
+          downloaded — there&apos;s no game folder to install into. Install it on Steam and
+          reopen Umbra to apply anything.
+        </p>
+      )}
       {patchFiles.length === 0 ? (
         <p className="text-sm text-text-dim">No downloadable patch files listed.</p>
       ) : (
@@ -161,7 +176,11 @@ export default function PatchActionPanel({ match }: PatchActionPanelProps): Reac
             const isExe = isExecutablePatch(f.name)
             const isCached = cachedFileNames.has(f.name)
             const isBusy = applying && activeIndex === idx
-            const showInstall = isExe || settings.betaAutoInstall
+            // No install directory means nothing to install *into*. This covers .exe
+            // patches too: a self-extracting installer pointed at a game that isn't
+            // there would either fail or, worse, unpack somewhere arbitrary. Downloading
+            // is still fine — the file just sits in the cache until the game is installed.
+            const showInstall = (isExe || settings.betaAutoInstall) && match.installed
 
             return (
               <li
@@ -248,10 +267,10 @@ export default function PatchActionPanel({ match }: PatchActionPanelProps): Reac
         </div>
       )}
 
-      {confirmFile && (
+      {confirmFile && installed[match.appid] && (
         <ConfirmApplyDialog
           gameName={match.gameName}
-          installDir={installed[match.appid]?.installDir ?? 'Unknown install directory'}
+          installDir={installed[match.appid].installDir}
           fileNames={[confirmFile.name]}
           onCancel={closeConfirm}
           onConfirm={() => void handleConfirmedApply()}

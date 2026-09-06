@@ -25,6 +25,12 @@ export function getFavoritesPath(): string {
   return join(getDataDir(), 'favorites.json')
 }
 
+/** Imported owned-games list. Sits alongside favorites.json rather than in the
+ *  electron-store settings file: it's bulk data (thousands of appids), not a setting. */
+export function getOwnedGamesPath(): string {
+  return join(getDataDir(), 'owned_games.json')
+}
+
 export function getCacheDir(): string {
   return join(getDataDir(), 'cache')
 }

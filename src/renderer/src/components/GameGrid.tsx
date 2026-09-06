@@ -3,6 +3,7 @@ import { countPatchFiles } from '@shared/fileKind'
 import BoxArt from './BoxArt'
 import FavoriteStar from './FavoriteStar'
 import UpdateBadge from './UpdateBadge'
+import NotInstalledBadge from './NotInstalledBadge'
 
 export default function GameGrid(): React.JSX.Element {
   const { matches, search, favorites, lastApplied, selectedAppid, selectGame, toggleFavorite } =
@@ -29,7 +30,7 @@ export default function GameGrid(): React.JSX.Element {
             onClick={() => selectGame(m.appid)}
             className={`group relative flex flex-col overflow-hidden rounded-lg border text-left transition-colors ${
               selected ? 'border-accent bg-bg-card' : 'border-transparent bg-bg-dark hover:bg-bg-card/60'
-            }`}
+            } ${m.installed ? '' : 'opacity-60 hover:opacity-100'}`}
           >
             <div className="relative">
               <BoxArt appid={m.appid} gameName={m.gameName} className="aspect-[2/3] w-full" />
@@ -39,6 +40,11 @@ export default function GameGrid(): React.JSX.Element {
               {isUpd && (
                 <div className="absolute bottom-1.5 left-1.5">
                   <UpdateBadge />
+                </div>
+              )}
+              {!m.installed && !isUpd && (
+                <div className="absolute bottom-1.5 left-1.5">
+                  <NotInstalledBadge compact />
                 </div>
               )}
             </div>
